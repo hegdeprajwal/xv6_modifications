@@ -1,0 +1,4 @@
+Functionalities added to the xv6 : 
+1) Created a system call to start tracing path of a directory/file if trace is enabled.
+2) Created a system call which returns number of the times file/directory has been opened.
+3) Reset of the trace counter if the new path is being passed as a parameter to trace. 
