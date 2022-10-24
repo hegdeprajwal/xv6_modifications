@@ -297,6 +297,71 @@ freevm(pde_t *pgdir)
   kfree((char*)pgdir);
 }
 
+int
+mprotect(void *addr, int len)
+{
+  pde_t *pgdir = myproc()->pgdir;
+  // cprintf("M protect is called : addr %x pgdir %x len - %d\n", addr , pgdir, len);
+  //if no pages 
+  if ( len <= 0 ) return -1;
+
+
+  // cprintf("M protect : proc_size %x\n",  myproc()->sz);
+  // if addr is beyond the size of the processor
+  if ( (uint)addr + (len * PGSIZE) > myproc()->sz) 
+    return -1;
+
+  //do alignment check 
+
+  //round down the address as per page size
+  uint base_addr = PGROUNDDOWN((uint)addr);
+  // cprintf("M protect proc_size : base %x\n",  base_addr);
+
+  // loop through each pages entr
+  //for each addr do a walk and get pte
+  for ( uint a = base_addr ; a < ((uint) addr + len * PGSIZE) ; a += PGSIZE) {
+    pte_t *pte = walkpgdir(pgdir, (void*) a, 0);
+    *pte = *pte & (~PTE_W);
+  }
+
+  //make sure that the hardware sees the changes by flushing the tlb and reinstall it 
+  lcr3(V2P(pgdir));
+  return 0;
+}
+
+int
+munprotect(void *addr, int len)
+{
+  pde_t *pgdir = myproc()->pgdir;
+  // cprintf("M unprotect is called : addr %x pgdir %x len - %d\n", addr , pgdir, len);
+  //if no pages 
+  if ( len <= 0 ) return -1;
+
+
+  // cprintf("M unprotect : proc_size %x\n",  myproc()->sz);
+  // if addr is beyond the size of the processor
+  if ( (uint)addr + (len * PGSIZE) > myproc()->sz) 
+    return -1;
+
+  //do alignment check 
+
+  //round down the address as per page size
+  uint base_addr = PGROUNDDOWN((uint)addr);
+  // cprintf("M unprotect proc_size : base %x\n",  base_addr);
+
+  // loop through each pages entr
+  //for each addr do a walk and get pte
+
+  for ( uint a = base_addr ; a < ((uint) addr + len * PGSIZE) ; a += PGSIZE) {
+    pte_t *pte = walkpgdir(pgdir, (void*) a, 0);
+    *pte = *pte | (PTE_W);
+  }
+
+  //make sure that the hardware sees the changes by flushing the tlb and reinstall it 
+  lcr3(V2P(pgdir));
+  return 0;
+}
+
 // Clear PTE_U on a page. Used to create an inaccessible
 // page beneath the user stack.
 void

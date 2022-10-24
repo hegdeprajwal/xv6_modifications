@@ -108,6 +108,8 @@ extern int sys_trace(void);
 extern int sys_getcount(void);
 extern int sys_settickets(void);
 extern int sys_getpinfo(void);
+extern int sys_mprotect(void);
+extern int sys_munprotect(void);
 
 static int (*syscalls[])(void) = {
 [SYS_fork]    sys_fork,
@@ -135,6 +137,8 @@ static int (*syscalls[])(void) = {
 [SYS_getcount]  sys_getcount,
 [SYS_settickets]  sys_settickets,
 [SYS_getpinfo]  sys_getpinfo,
+[SYS_mprotect]  sys_mprotect,
+[SYS_munprotect]  sys_munprotect,
 };
 
 void
