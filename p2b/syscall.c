@@ -64,7 +64,6 @@ argptr(int n, char **pp, int size)
   if(argint(n, &i) < 0)
     return -1;
   if(i == 0 || size < 0 || (uint)i >= curproc->sz || (uint)i+size > curproc->sz){
-    cprintf("Error detected");
     return -1;
   }
   *pp = (char*)i;

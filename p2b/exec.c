@@ -49,7 +49,7 @@ exec(char *path, char **argv)
       goto bad;
     if(ph.vaddr + ph.memsz < ph.vaddr)
       goto bad;
-    cprintf("\n alloc vm being called : %x %d %d\n", pgdir, sz, ph.vaddr + ph.memsz);
+    //cprintf("\n alloc vm being called : %x %d %d\n", pgdir, sz, ph.vaddr + ph.memsz);
     //allocates memory
     if((sz = allocuvm(pgdir, sz, ph.vaddr + ph.memsz)) == 0)
       goto bad;
