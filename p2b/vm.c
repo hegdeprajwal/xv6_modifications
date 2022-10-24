@@ -75,7 +75,6 @@ mappages(pde_t *pgdir, void *va, uint size, uint pa, int perm)
       break;
     a += PGSIZE;
     pa += PGSIZE;
-    cprintf("mappages : a : %s pa : %s", a, pa);
   }
   return 0;
 }
@@ -200,7 +199,7 @@ loaduvm(pde_t *pgdir, char *addr, struct inode *ip, uint offset, uint sz)
 {
   uint i, pa, n;
   pte_t *pte;
-  cprintf("page directory : %x\n" , pgdir );
+
   if((uint) addr % PGSIZE != 0)
     panic("loaduvm: addr must be page aligned");
   for(i = 0; i < sz; i += PGSIZE){
@@ -225,7 +224,6 @@ allocuvm(pde_t *pgdir, uint oldsz, uint newsz)
   char *mem;
   uint a;
 
-  //below the kernal base
   if(newsz >= KERNBASE)
     return 0;
   if(newsz < oldsz)
@@ -314,7 +312,6 @@ clearpteu(pde_t *pgdir, char *uva)
 
 // Given a parent process's page table, create a copy
 // of it for a child.
-//changed the first page table lookup from PGSIZE address
 pde_t*
 copyuvm(pde_t *pgdir, uint sz)
 {
