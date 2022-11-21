@@ -120,9 +120,8 @@ void            userinit(void);
 int             wait(void);
 void            wakeup(void*);
 void            yield(void);
-int             clone(void (*fn_ptr) (void* , void*), void *arg1, void *arg2, void *stack_ptr);
-int             join(void **);
-
+int 			clone(void(*func) (void *, void *), void*, void*, void*);
+int 			join(void **);
 // swtch.S
 void            swtch(struct context**, struct context*);
 
@@ -166,6 +165,7 @@ void            idtinit(void);
 extern uint     ticks;
 void            tvinit(void);
 extern struct spinlock tickslock;
+extern struct spinlock memlock;
 
 // uart.c
 void            uartinit(void);

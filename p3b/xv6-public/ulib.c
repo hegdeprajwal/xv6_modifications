@@ -3,18 +3,11 @@
 #include "fcntl.h"
 #include "user.h"
 #include "x86.h"
-#include "mmu.h"
+#include <stddef.h>
 
-
-static inline int fetch_and_add(int *var, int val) {   
-    __asm__ volatile
-    ("lock; xaddl %0, %1"
-	: "+r" (val),  "+m" (*var) // input + output
-	: // No input
-	: "memory"
-    );
-    return val;
-}
+#define PGSIZE 0x1000
+void* address_record[32];
+int value_record[64];
 
 char*
 strcpy(char *s, const char *t)
@@ -118,41 +111,75 @@ memmove(void *vdst, const void *vsrc, int n)
 }
 
 int 
-thread_create(void (*start_routine)(void *, void *), void* arg1, void* arg2)
+thread_create(void (*start_routine)(void *, void *), void *arg1, void *arg2)
 {
-  void* stack;
-  stack = malloc(PGSIZE);
-  // printf(1 , "%d" , stack);
-  return clone(start_routine, arg1, arg2, stack);
-}
-
-int 
-thread_join() 
-{
+  void* stackPtr; 
   void *stack;
-  int ret_pid = join(&stack);
 
-  if (ret_pid != -1) 
-  {
-    free(stack);
+  //allocate memory
+  stackPtr = malloc(2*PGSIZE);
+
+
+  if(stackPtr == 0) {
+    return -1;
   }
 
-  return ret_pid;
+  //Stack alignment
+  int extra = ((uint)(stackPtr)) % PGSIZE;
+  stack = (stackPtr) + PGSIZE - extra;
 
+  int childPid = clone(start_routine, arg1, arg2, stack);
+
+  //keep track of the thread stack ptr passed and its pid
+  if (childPid != -1) {
+    for(int i=0; i<32; i++ ) {
+      if(address_record[i] == NULL) {
+        address_record[i] = stackPtr;
+        value_record[i] = childPid;
+        break;
+      }
+    }
+  }
+  else {
+    free(stackPtr);
+  }
+  
+  return childPid;
 }
 
-void lock_init(lock_t *lock)
+int
+thread_join()
 {
-  lock->ticket = 0;
-  lock->turn = 0;
+  void *stack;
+  int Pid;
+
+  Pid = join(&stack);
+
+  //search in the record to check the return pid and free the corresponding ptr ( before page aligned )
+  if (Pid != -1) {
+    for(int i=0; i<32; i++) {
+      if(value_record[i] == Pid) {
+        free(address_record[i]);
+        value_record[i] = -1;
+        address_record[i] = NULL;
+      }
+    }
+  }
+
+  return Pid;
 }
 
-void lock_acquire(lock_t *lock){
-  int myTurn = fetch_and_add(&lock->ticket , 1);
-  while ( lock->turn != myTurn) 
-  {}; // keep spinning
+void lock_init(lock_t *lock) {
+  lock->flag = 0;
 }
 
-void lock_release(lock_t *lock){
-	lock->turn += 1;
+void lock_acquire(lock_t *lock) {
+  while(lock->flag == 1)
+        ;//wait
+  lock->flag = 1;
+}
+
+void lock_release(lock_t *lock) {
+  //release the lock
+  lock->flag = 0;
 }

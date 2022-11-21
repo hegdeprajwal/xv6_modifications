@@ -47,12 +47,15 @@ sys_sbrk(void)
 {
   int addr;
   int n;
-
+  acquire(&memlock);
   if(argint(0, &n) < 0)
     return -1;
   addr = myproc()->sz;
-  if(growproc(n) < 0)
+  if(growproc(n) < 0){
+    release(&memlock);
     return -1;
+  }
+  release(&memlock);
   return addr;
 }
 
@@ -90,37 +93,32 @@ sys_uptime(void)
   return xticks;
 }
 
-int sys_clone (void ) {
-  void (*fn_ptr)(void* , void*);  
-  void* stack_ptr; 
-  void* arg1; 
-  void* arg2;   
+int
+sys_clone(void)
+{
+  void *arg1, *arg2, *stack;
+  void(*func) (void *, void *);
 
-  
-  argptr(0, (void*)&fn_ptr, sizeof(void(*)(void* , void*)));
-  argptr(1, (void*)&arg1, sizeof(void*));
+  if(argptr(0, (void *)&func, 0) < 0)
+    return -1;
+  if(argptr(1, (void *)&arg1, sizeof(void*)) < 0)
+    return -1;
+  if(argptr(2, (void *)&arg2, sizeof(void*)) < 0)
+    return -1;
+  if(argptr(3, (void *)&stack, PGSIZE) < 0)
+    return -1;
 
-  argptr(2, (void*)&arg2, sizeof(void*));
-
-  argptr(3, (void*)&stack_ptr, sizeof(void*));
-
-
-  // argptr(0, (void*)&fn_ptr, sizeof(void (*)(void*))); 
-  // argptr(3, (void*)&stack_ptr, sizeof(void*));
-
-  // argptr(1, (void*)&arg1, sizeof(void*));
-  // argptr(2, (void*)&arg2, sizeof(void*));
-
-
-  return clone( fn_ptr , arg1, arg2, stack_ptr);
-  
+  // Checking for page alignment
+  if((uint)stack % PGSIZE != 0)
+    return -1;
+  return clone(func, arg1, arg2, stack);
 }
 
-int sys_join ( void ) {
-  void** stack_ptr;  
-
-  if(argptr(0, (void*)&stack_ptr, sizeof(void *)) < 0)
+int
+sys_join(void)
+{
+  void **stackPointer;
+  if(argptr(0, (void*)&stackPointer, sizeof(void *)) < 0)
     return -1;
-  return join(stack_ptr);
-
+  return join(stackPointer);
 }
