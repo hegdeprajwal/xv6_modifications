@@ -1,11 +1,18 @@
 #include "types.h"
+#include "stat.h"
 #include "user.h"
+#include "pstat.h"
 
-int main() {
-  int ret0 = getcount();
-  open("random file", 0);
-  open("another random file", 0);
-  int ret1 = getcount();
-  printf(1, "XV6_TEST_OUTPUT %d %d\n", ret0, ret1);
-  exit();
+int
+main(int argc, char *argv[])
+{  
+  if(settickets(1) == 0)
+  {
+   printf(1, "XV6_SCHEDULER\t SUCCESS\n");
+  }
+  else
+  {
+   printf(1, "XV6_SCHEDULER\t FAILED\n");
+  }
+   exit();
 }

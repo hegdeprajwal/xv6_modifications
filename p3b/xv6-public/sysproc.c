@@ -119,8 +119,8 @@ int sys_clone (void ) {
 int sys_join ( void ) {
   void** stack_ptr;  
 
-  argptr(0, (void*)&stack_ptr, sizeof(void**));
-
+  if(argptr(0, (void*)&stack_ptr, sizeof(void *)) < 0)
+    return -1;
   return join(stack_ptr);
 
 }

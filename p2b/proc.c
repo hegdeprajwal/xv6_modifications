@@ -383,9 +383,9 @@ scheduler(void)
       switchuvm(p);
       p->state = RUNNING;
       p->ticks ++;
+      //cprintf("\t Process -> Name  : %s PID : %d tickets : %d\n", p->name, p->pid, p->ticket);
       swtch(&(c->scheduler), p->context);
       switchkvm();
-
       // Process is done running for now.
       // It should have changed its p->state before coming back.
       c->proc = 0;

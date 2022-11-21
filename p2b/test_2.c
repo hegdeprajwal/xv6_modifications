@@ -1,11 +1,39 @@
 #include "types.h"
+#include "stat.h"
 #include "user.h"
+#include "pstat.h"
 
-int main() {
-  int ret1 = trace("random path");
-  int ret2 = getcount();
+int
+main(int argc, char *argv[])
+{
+   struct pstat st;
+   int pid = getpid();
+   int defaulttickets = 0;
+   
+   if(getpinfo(&st) == 0)
+   {
+    for(int i = 0; i < NPROC; i++) {
+      if (st.inuse[i]) {
+        if(st.pid[i] == pid) {
+          defaulttickets = st.tickets[i];
+         }
+      }
+   }
+   }
+  else
+  {
+   printf(1, "XV6_SCHEDULER\t FAILED\n");
+   exit();
+  }
 
-  printf(1, "XV6_TEST_OUTPUT %d %d\n", ret1, ret2);
-
-  exit();
+  
+  if(defaulttickets == 1)
+  {
+   printf(1, "XV6_SCHEDULER\t SUCCESS\n");
+  }
+  else
+  {
+   printf(1, "XV6_SCHEDULER\t FAILED\n");
+  }
+   exit();
 }

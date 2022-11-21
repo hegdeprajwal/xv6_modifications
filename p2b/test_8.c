@@ -1,21 +1,20 @@
 #include "types.h"
+#include "stat.h"
 #include "user.h"
+#include "pstat.h"
 
-#define PATH "pathname"
+int
+main(int argc, char *argv[])
+{
 
-int main() {
-  
-  if (trace(PATH) < 0) {
-    printf(1, "XV6_TEST_OUTPUT trace failed\n");
-    exit();
-  }
-
-  for (int i = 0; i < 10000; i++) {
-    open(PATH, 0);
-  }
-
-  int ret = getcount();
-  printf(1, "XV6_TEST_OUTPUT %d\n", ret);
-
-  exit();
+   if(getpinfo((struct pstat *)1000000) == -1)
+   {
+    printf(1, "XV6_SCHEDULER\t SUCCESS\n");
+   }
+   else
+   {
+    printf(1, "XV6_SCHEDULER\t FAILED\n");
+   }
+   
+   exit();
 }

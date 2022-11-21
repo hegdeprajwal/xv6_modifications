@@ -202,6 +202,7 @@ fork(void)
 
   // Clear %eax so that fork returns 0 in the child.
   np->tf->eax = 0;
+  np->isThread = 0;
 
   for(i = 0; i < NOFILE; i++)
     if(curproc->ofile[i])
@@ -584,6 +585,7 @@ clone(void (*fn_ptr) (void* , void*), void *arg1, void *arg2, void *stack_ptr)
   //update stack ptr - esp 
   np->tf->esp = (uint)stack_ptr + PGSIZE - 3 * sizeof(uint);
   np->tf->eip = (uint)fn_ptr;
+  np->isThread = 1;
 
   // Clear %eax so that fork returns 0 in the child.
   np->tf->eax = 0;
@@ -613,23 +615,13 @@ join(void **stack)
   struct proc *p;
   int havekids, pid;
   struct proc *curproc = myproc();
-
-  if ((uint) stack + PGSIZE > (curproc->sz))
-  {
-    return -1;
-  }
-
-  if ((uint) stack < (curproc->tf->ebp))
-  {
-    return -1;
-  }
-  
+ 
   acquire(&ptable.lock);
   for(;;){
     // Scan through table looking for exited children.
     havekids = 0;
     for(p = ptable.proc; p < &ptable.proc[NPROC]; p++){
-      if(p->parent != curproc)
+      if(p->parent != curproc || p->isThread != 1 )
         continue;
       havekids = 1;
       if(p->state == ZOMBIE){

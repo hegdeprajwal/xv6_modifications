@@ -1,23 +1,18 @@
 #include "types.h"
+#include "stat.h"
 #include "user.h"
+#include "pstat.h"
 
-#define PATH "file.txt"
-
-int main() {
-  char buffer[100];
-  
-  strcpy(buffer, PATH);
-  if (trace(buffer) < 0) {
-    printf(1, "XV6_TEST_OUTPUT trace failed\n");
-    exit();
+int
+main(int argc, char *argv[])
+{  
+  if(settickets(-10) == -1)
+  {
+   printf(1, "XV6_SCHEDULER\t SUCCESS\n");
   }
-
-  strcpy(buffer, "random string");
-  open(PATH, 0);
-  open(PATH, 0);
-  open(PATH, 0);
-
-  int ret = getcount();
-  printf(1, "XV6_TEST_OUTPUT %d\n", ret);
-  exit();
+  else
+  {
+   printf(1, "XV6_SCHEDULER\t FAILED\n");
+  }
+   exit();
 }

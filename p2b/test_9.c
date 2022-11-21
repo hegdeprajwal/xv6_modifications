@@ -1,37 +1,56 @@
 #include "types.h"
+#include "stat.h"
 #include "user.h"
+#include "pstat.h"
 
-#define PATH "pathname"
+int
+main(int argc, char *argv[]){
+	int pid_par = getpid();
+	int tickets = 0;
+	
+	if(settickets(tickets) == 0)
+	{
+	}
+	else
+	{
+	 printf(1, "XV6_SCHEDULER\t FAILED\n");
+	 exit();
+	}
+	
+	if(fork() == 0){
+		int pid_chd = getpid();
+		struct pstat st;
+		if(getpinfo(&st) == 0)
+		{
+		}
+		else
+		{
+		 printf(1, "XV6_SCHEDULER\t FAILED\n");
+		 exit();
+		}
+		int tickets_par = -1,tickets_chd = -1;
+		for(int i = 0; i < NPROC; i++){
+      			if (st.pid[i] == pid_par){
+				tickets_par = st.tickets[i];
+			}
+			else if (st.pid[i] == pid_chd){
+				tickets_chd = st.tickets[i];
+			}
+		}
 
-int main() {
-  int iter = 10;
+		printf(1, "parent: %d, child: %d\n", tickets_par, tickets_chd);
 
-  if (trace(PATH) < 0) {
-    printf(1, "XV6_TEST_OUTPUT trace failed\n");
+		if(tickets_chd == tickets)
+		{
+		 printf(1, "XV6_SCHEDULER\t SUCCESS\n");
+		}
+		else
+		{
+		 printf(1, "XV6_SCHEDULER\t FAILED\n");
+		}
+
     exit();
-  }
-
-  int ret = fork();
-  if (ret < 0) {
-    printf(1, "XV6_TEST_OUTPUT fork failed\n");
-    exit();
-  } else if (ret == 0) {
-    for (int i = 0; i < iter; i++) {
-      open(PATH, 0);
-    }
-    exit();
-  } else {
-    wait();
-  }
-
-  int ret1 = getcount();
-
-  for (int i = 0; i < 2*iter; i++) {
-    open(PATH, 0);
-  }
-  int ret2 = getcount();
-  
-  printf(1, "XV6_TEST_OUTPUT %d %d\n", ret1, ret2);
-
-  exit();
+	}
+  	while(wait() > 0);
+	exit();
 }
